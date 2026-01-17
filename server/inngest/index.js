@@ -147,9 +147,11 @@ const sendNotificationOfUnseenMessages = inngest.createFunction(
     const messages = await Message.find({ seen: false }).populate("to_user_id");
     const unseenCount = {};
 
-    messages.map((message) => {
-      unseenCount[message.to_user_id._id] =
-        (unseenCount[message.to_user_id._id] || 0) + 1;
+    messages.forEach((message) => {
+      if (!message.to_user_id) return;
+
+      unseenCount[message.to_user_id] =
+        (unseenCount[message.to_user_id] || 0) + 1;
     });
 
     for (const userId in unseenCount) {
@@ -171,7 +173,6 @@ const sendNotificationOfUnseenMessages = inngest.createFunction(
         subject,
         body,
       });
-
     }
     return { message: "Notification sent." };
   },
