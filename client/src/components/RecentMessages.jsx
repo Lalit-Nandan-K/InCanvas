@@ -1,13 +1,24 @@
 import React, { useEffect, useState } from 'react'
-import { dummyRecentMessagesData } from '../assets/assets';
 import { Link } from 'react-router-dom'
 import moment from 'moment';
+import api from '../api/axios';
+import toast from 'react-hot-toast';
+import { assets } from '../assets/assets';
 
 const RecentMessages = () => {
   const [messages ,setMessages] =useState([]);
 
   const fetchRecentMessages = async ()=>{
-    setMessages(dummyRecentMessagesData);
+    try {
+      const { data } = await api.get('/api/user/recent-messages');
+      if (data.success) {
+        setMessages(data.messages);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   }
 
   useEffect(()=>{
@@ -19,9 +30,11 @@ const RecentMessages = () => {
       <h3 className='font-semibold text-slate-800 mb-4'>Recent Messages</h3>
       <div className='flex flex-col max-h-56 overflow-y-scroll no-scrollbar'></div>
       {
-        messages.map((message , index)=>(
-          <Link to={`/messages/${message.from_user_id._id}`} key={index} className='flex items-start gap-2 py-2 hover:bg-slate-100'>
-            <img src={message.from_user_id.profile_picture} alt='' className='w-8 h-8 rounded-full'/>
+        messages
+          .filter((message) => message?.from_user_id?._id)
+          .map((message)=>(
+          <Link to={`/messages/${message.from_user_id._id}`} key={message._id} className='flex items-start gap-2 py-2 hover:bg-slate-100'>
+            <img src={message.from_user_id.profile_picture || assets.sample_profile} alt='' className='w-8 h-8 rounded-full'/>
             <div className='w-full'>
               <div className='flex justify-between'>
               <p className='font-medium'>{message.from_user_id.full_name}</p>

@@ -1,5 +1,4 @@
 import imagekit from "../configs/imageKit.js";
-import { inngest } from "../inngest/index.js";
 import Story from "../models/Story.js";
 import User from "../models/User.js";
 import fs from "fs";
@@ -7,7 +6,7 @@ import fs from "fs";
 // Add user Story
 export const addUserStory = async (req, res) => {
   try {
-    const { userId } = req.auth();
+    const userId = req.userId;
     const { content, media_type, background_color } = req.body;
     const media = req.file;
     let media_url = "";
@@ -30,12 +29,6 @@ export const addUserStory = async (req, res) => {
       background_color,
     });
 
-    // schedule story deletion after 24 hours
-    await inngest.send({
-      name: "app/story.delete",
-      data: { storyId: story._id },
-    });
-
     res.json({ success: true });
   } catch (error) {
     console.log(error);
@@ -46,7 +39,7 @@ export const addUserStory = async (req, res) => {
 // Get user Story
 export const getStories = async (req, res) => {
   try {
-    const { userId } = req.auth();
+    const userId = req.userId;
     const user = await User.findById(userId);
 
     // User connections and followings

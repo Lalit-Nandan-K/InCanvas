@@ -24,11 +24,11 @@ userRouter.get("/data", protect, getUserData);
 
 userRouter.post(
   "/update",
+  protect,
   upload.fields([
     { name: "profile", maxCount: 1 },
     { name: "cover", maxCount: 1 },
   ]),
-  protect,
   updateUserData,
 );
 
@@ -44,7 +44,7 @@ userRouter.post("/accept", protect, acceptConnectionRequest);
 
 userRouter.get("/connections", protect, getUserConnections);
 
-userRouter.post("/profiles", getUserProfiles);
+userRouter.post("/profiles", protect, getUserProfiles);
 
 userRouter.get("/recent-messages", protect, getUserRecentMessages);
 

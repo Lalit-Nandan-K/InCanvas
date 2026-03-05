@@ -1,18 +1,29 @@
 import React from "react";
-import { assets, dummyUserData } from "../assets/assets";
+import { assets } from "../assets/assets";
 import { Link, useNavigate } from "react-router-dom";
 import MenuItems from "./MenuItems";
 import { CirclePlus, LogOut } from "lucide-react";
-import { UserButton, useClerk } from "@clerk/clerk-react";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../features/user/userSlice";
+import toast from "react-hot-toast";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const navigate = useNavigate();
-  const user = dummyUserData;
-  const { signOut } = useClerk();
+  const dispatch = useDispatch();
+  const user = useSelector((state)=>state.user.value);
+
+  const onLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      toast.success("Logged out");
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   return (
     <div
-      className={`w-60 xl:w-72 bg-white border-r border-gray-200 flex flex-col justify-between items-center max-sm:absolute top-0 bottom-0 z-20 {sidebarOpen ? 'translate-x-0' : 'max-sm:-translate-x-full'} translate-all duration-300 ease-in-out`}
+      className={`w-60 xl:w-72 bg-white border-r border-gray-200 flex flex-col justify-between items-center max-sm:absolute top-0 bottom-0 z-20 transition-all duration-300 ease-in-out ${sidebarOpen ? "translate-x-0" : "max-sm:-translate-x-full"}`}
     >
       <div className="w-full">
         <img
@@ -34,13 +45,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
       <div className="w-full border-t border-gray-200 p-4 px-7 flex items-center justify-between">
         <div className="flex gap-2 items-center cursor-pointer">
-          <UserButton />
+          <img src={user.profile_picture || assets.sample_profile} alt="" className="w-8 h-8 rounded-full" />
           <div>
             <h1 className="text-sm font-medium">{user.full_name}</h1>
             <p className="text-xs text-gray-500">@{user.username}</p>
           </div>
         </div>
-        <LogOut onClick={signOut} className="w-4.5 text-gray-400 hover:text-gray-700 transition cursor-pointer"/>
+        <LogOut onClick={onLogout} className="w-4.5 text-gray-400 hover:text-gray-700 transition cursor-pointer"/>
       </div>
     </div>
   );

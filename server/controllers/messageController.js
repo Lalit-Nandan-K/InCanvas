@@ -8,13 +8,16 @@ const connections = {};
 // Controller function for the the SSE endpoint
 export const sseController = (req, res) => {
   const { userId } = req.params;
+  if (req.userId.toString() !== userId.toString()) {
+    return res.status(403).end();
+  }
   console.log("New client connected : ", userId);
 
   // Set SSE headers
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL || "*");
 
   // Add the client's response object to the connections object
   connections[userId] = res;
@@ -33,7 +36,7 @@ export const sseController = (req, res) => {
 // Send Message
 export const sendMessage = async (req, res) => {
   try {
-    const { userId } = req.auth();
+    const userId = req.userId;
     const { to_user_id, text } = req.body;
     const image = req.file;
 
@@ -76,7 +79,7 @@ export const sendMessage = async (req, res) => {
       );
     }
   } catch (error) {
-    console.log(err);
+    console.log(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -84,14 +87,14 @@ export const sendMessage = async (req, res) => {
 // Get Chat Messsage
 export const getChatMessages = async (req, res) => {
   try {
-    const { userId } = req.auth();
+    const userId = req.userId;
     const { to_user_id } = req.body;
     const messages = await Message.find({
       $or: [
         { from_user_id: userId, to_user_id },
         { from_user_id: to_user_id, to_user_id: userId },
       ],
-    }).sort({ created_at: -1 });
+    }).sort({ createdAt: -1 });
     // mark messages as seen
     await Message.updateMany(
       { from_user_id: to_user_id, to_user_id: userId },
@@ -106,10 +109,10 @@ export const getChatMessages = async (req, res) => {
 // Get recent messages
 export const getUserRecentMessages = async (req, res) => {
   try {
-    const { userId } = req.auth();
+    const userId = req.userId;
     const messages = await Message.find({ to_user_id: userId })
       .populate("from_user_id to_user_id")
-      .sort({ created_at: -1 });
+      .sort({ createdAt: -1 });
 
     res.json({ success: true, messages });
   } catch (error) {

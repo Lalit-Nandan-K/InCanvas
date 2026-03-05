@@ -6,9 +6,9 @@ import User from "../models/User.js";
 // Add Post
 export const addPost = async (req, res) => {
   try {
-    const { userId } = req.auth();
+    const userId = req.userId;
     const { content, post_type } = req.body;
-    const images = req.files;
+    const images = req.files || [];
 
     let image_urls = [];
 
@@ -18,7 +18,7 @@ export const addPost = async (req, res) => {
           const fileBuffer = fs.readFileSync(image.path);
           const response = await imagekit.upload({
             file: fileBuffer,
-            fileName: profile.originalname,
+            fileName: image.originalname,
             folder:"posts",
           });
 
@@ -50,7 +50,7 @@ export const addPost = async (req, res) => {
 // Get Post
 export const getFeedPosts=async(req,res)=>{
   try {
-    const {userId}=req.auth();
+    const userId = req.userId;
     const user=await User.findById(userId)
 
     // User connection and followings
@@ -69,13 +69,13 @@ export const getFeedPosts=async(req,res)=>{
 // Like Post
 export const likePost=async(req,res)=>{
   try {
-    const {userId}=req.auth();
+    const userId = req.userId;
     const {postId} = req.body;
 
     const post = await Post.findById(postId);
 
-    if(post.likes_count.includes(userId)){
-      post.likes_count=post.likes_count.filter(user => user.toString() !== userId)
+    if(post.likes_count.some((id) => id.toString() === userId.toString())){
+      post.likes_count=post.likes_count.filter((user) => user.toString() !== userId.toString())
       await post.save()
       res.json({success:true,message:"Post unliked"});
     }else{
