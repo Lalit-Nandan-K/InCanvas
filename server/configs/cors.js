@@ -1,5 +1,9 @@
 const LOCAL_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"];
 
+// localhost = ek special hostname hai
+// 127.0.0.1 = loopback IP address hai
+// Dono ka meaning almost same hai: current machine / same computer
+
 const parseOrigins = (value = "") =>
   value
     .split(",")

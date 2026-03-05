@@ -89,7 +89,7 @@ export const register = async (req, res) => {
       console.error("Welcome email failed:", mailError.message);
     }
 
-    res.json({ success: true, user: sanitizeUser(user) });
+    res.json({ success: true, user: sanitizeUser(user), token });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
@@ -115,7 +115,7 @@ export const login = async (req, res) => {
     const token = getToken(user._id);
     setAuthCookie(res, token);
 
-    res.json({ success: true, user: sanitizeUser(user) });
+    res.json({ success: true, user: sanitizeUser(user), token });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
