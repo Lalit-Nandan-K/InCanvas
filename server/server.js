@@ -8,6 +8,7 @@ import postRouter from './routes/postRoutes.js';
 import storyRouter from './routes/storyRoutes.js';
 import messageRouter from './routes/messageRoutes.js';
 import authRouter from './routes/authRoutes.js';
+import { corsOptions } from './configs/cors.js';
 
 const app = express();
 
@@ -15,12 +16,7 @@ await connectDB();
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true,
-  }),
-);
+app.use(cors(corsOptions));
 
 app.get('/',(req,res)=>res.send('Server is running '));
 app.use('/api/auth', authRouter);

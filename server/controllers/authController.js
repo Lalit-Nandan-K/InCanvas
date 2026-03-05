@@ -6,13 +6,21 @@ import sendEmail from "../configs/nodeMailer.js";
 const getToken = (userId) =>
   jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-const setAuthCookie = (res, token) => {
-  res.cookie("token", token, {
+const getCookieOptions = () => {
+  const isProduction =
+    process.env.NODE_ENV === "production" ||
+    process.env.RENDER === "true" ||
+    Boolean(process.env.RENDER_EXTERNAL_URL);
+  return {
     httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
     maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+  };
+};
+
+const setAuthCookie = (res, token) => {
+  res.cookie("token", token, getCookieOptions());
 };
 
 const sanitizeUser = (user) => {
@@ -114,11 +122,8 @@ export const login = async (req, res) => {
 };
 
 export const logout = async (_req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-  });
+  const { maxAge, ...clearOptions } = getCookieOptions();
+  res.clearCookie("token", clearOptions);
   res.json({ success: true, message: "Logged out" });
 };
 

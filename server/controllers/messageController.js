@@ -1,6 +1,7 @@
 import fs from "fs";
 import imagekit from "../configs/imageKit.js";
 import Message from "../models/Message.js";
+import { isAllowedOrigin } from "../configs/cors.js";
 
 // Create an empty oject to store Server Side Event connections
 const connections = {};
@@ -17,7 +18,13 @@ export const sseController = (req, res) => {
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
-  res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL || "*");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  const requestOrigin = req.headers.origin;
+  if (requestOrigin && isAllowedOrigin(requestOrigin)) {
+    res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+    res.setHeader("Vary", "Origin");
+  }
 
   // Add the client's response object to the connections object
   connections[userId] = res;
